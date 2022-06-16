@@ -4,18 +4,16 @@
 
 A Scala veneer for [Metrics](https://metrics.dropwizard.io/).
 
-The library provides a simplified interface for gathering application metrics.
-
 ## Getting Started
 
-To get started, add **Pretty Metrics** to your project.
+To get started, add **Pretty Metrics** to your project:
 
 ```scala
-libraryDependencies += "com.github.losizm" %% "pretty-metrics" % "0.1.0"
+libraryDependencies += "com.github.losizm" %% "pretty-metrics" % "0.2.0"
 ```
 
 And since [Metrics](https://metrics.dropwizard.io/) is used under the hood,
-you'll need to add an implementation.
+you'll need to add an implementation:
 
 ```scala
 libraryDependencies += "io.dropwizard.metrics" % "metrics-core" % "4.2.9"
@@ -26,10 +24,7 @@ libraryDependencies += "io.dropwizard.metrics" % "metrics-core" % "4.2.9"
 This first snippet shows how to manage a counter, meter, and histogram.
 
 ```scala
-import pretty.metrics.Metrics
-
-// Create metric registry
-val metrics = Metrics()
+val metrics = pretty.metrics.Metrics()
 
 // Increment and decrement counter
 metrics.inc("app.counter")
@@ -77,24 +72,24 @@ val answer2 = metrics.time("app.timer") { fib(42) }
 assert(answer2 == 267914296)
 
 val timer = metrics.timer("app.timer")
-printf("timer: min: %d, max=%d, oneMinuteRate=%.3f%n",
+printf("timer: min=%d, max=%d, oneMinuteRate=%.3f%n",
     timer.min, timer.max, timer.oneMinuteRate)
 ```
 
-To close things out, the following takes readings from a custom gauge.
+To close things out, the following takes readings from a gauge.
 
 ```scala
-// Add gauge to check JVM free memory
+// Add gauge to check free memory
 metrics.addGauge("app.gauge") { () =>
   Runtime.getRuntime().freeMemory() / 1024
 }
 
-val gauge1 = metrics.gauge("app.gauge")
+val gauge1 = metrics.gauge[Long]("app.gauge")
 println(s"There are ${gauge1.value} KiB of free memory.")
 
-val buffer = new Array[Int](256 * 1024)
+val buffer = new Array[Byte](256 * 1024)
 
-val gauge2 = metrics.gauge("app.gauge")
+val gauge2 = metrics.gauge[Long]("app.gauge")
 println(s"There are ${gauge2.value} KiB of free memory.")
 ```
 

@@ -23,9 +23,9 @@ import scala.collection.{ Set, SortedSet }
 import jmetrics.{ MetricFilter, MetricRegistry }
 
 /**
- * Provides simplified interface to gather metrics.
+ * Provides interface for gathering metrics.
  *
- * @param registry underlying metric registry; defaults to `MetricRegistry()`
+ * @param registry underlying metric registry
  */
 class Metrics (val registry: MetricRegistry = MetricRegistry()):
   /** Gets all metric names. */
@@ -48,8 +48,6 @@ class Metrics (val registry: MetricRegistry = MetricRegistry()):
    * @param name metric name
    *
    * @return this
-   *
-   * @see [[inc]], [[dec]]
    */
   def addCounter(name: String): this.type =
     registry.counter(name)
@@ -100,8 +98,6 @@ class Metrics (val registry: MetricRegistry = MetricRegistry()):
    * @param name metric name
    *
    * @return this
-   *
-   * @see [[mark]]
    */
   def addMeter(name: String): this.type =
     registry.meter(name)
@@ -152,8 +148,6 @@ class Metrics (val registry: MetricRegistry = MetricRegistry()):
    * @param name metric name
    *
    * @return this
-   *
-   * @see [[update]]
    */
   def addHistogram(name: String): this.type =
     registry.histogram(name)
@@ -204,8 +198,6 @@ class Metrics (val registry: MetricRegistry = MetricRegistry()):
    * @param name metric name
    *
    * @return this
-   *
-   * @see [[time]]
    */
   def addTimer(name: String): this.type =
     registry.timer(name)

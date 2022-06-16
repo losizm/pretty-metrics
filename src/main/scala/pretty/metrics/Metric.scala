@@ -23,28 +23,28 @@ sealed trait Metric:
 /**
  * Provides counter metric.
  *
- * @see [[Metrics.addCounter]], [[Metrics.inc]], [[Metrics.dec]]
+ * @see [[Metrics.addCounter]]
  */
 sealed trait Counter extends Metric with Count
 
 /**
  * Provides meter metric.
  *
- * @see [[Metrics.addMeter]], [[Metrics.mark]]
+ * @see [[Metrics.addMeter]]
  */
 sealed trait Meter extends Metric with Rates
 
 /**
  * Provides histogram metric.
  *
- * @see [[Metrics.addHistogram]], [[Metrics.update]]
+ * @see [[Metrics.addHistogram]]
  */
 sealed trait Histogram extends Metric with Statistics
 
 /**
  * Provides timer metric.
  *
- * @see [[Metrics.addTimer]], [[Metrics.time]]
+ * @see [[Metrics.addTimer]]
  */
 sealed trait Timer extends Metric with Rates with Statistics
 
