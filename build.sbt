@@ -1,6 +1,6 @@
 organization := "com.github.losizm"
 name         := "pretty-metrics"
-version      := "0.1.0"
+version      := "0.2.0"
 description  := "A Scala veneer for Metrics"
 licenses     := List("Apache License, Version 2" -> url("http://www.apache.org/licenses/LICENSE-2.0.txt"))
 homepage     := Some(url("https://github.com/losizm/little-metrics"))
