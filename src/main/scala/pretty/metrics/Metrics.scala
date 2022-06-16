@@ -47,6 +47,8 @@ class Metrics (val registry: MetricRegistry = MetricRegistry()):
    *
    * @param name metric name
    *
+   * @return this
+   *
    * @see [[inc]], [[dec]]
    */
   def addCounter(name: String): this.type =
@@ -96,6 +98,8 @@ class Metrics (val registry: MetricRegistry = MetricRegistry()):
    * Adds meter to registry.
    *
    * @param name metric name
+   *
+   * @return this
    *
    * @see [[mark]]
    */
@@ -147,6 +151,8 @@ class Metrics (val registry: MetricRegistry = MetricRegistry()):
    *
    * @param name metric name
    *
+   * @return this
+   *
    * @see [[update]]
    */
   def addHistogram(name: String): this.type =
@@ -196,6 +202,8 @@ class Metrics (val registry: MetricRegistry = MetricRegistry()):
    * Adds timer to registry.
    *
    * @param name metric name
+   *
+   * @return this
    *
    * @see [[time]]
    */
@@ -247,6 +255,8 @@ class Metrics (val registry: MetricRegistry = MetricRegistry()):
    *
    * @param name metric name
    * @param gauge gauging function
+   *
+   * @return this
    */
   def addGauge[T](name: String)(gauge: () => T): this.type =
     registry.register(name, new jmetrics.Gauge[T] { def getValue() = gauge() })
@@ -297,6 +307,8 @@ class Metrics (val registry: MetricRegistry = MetricRegistry()):
    * @param name metric name
    * @param count increment amount
    *
+   * @return this
+   *
    * @note A counter is added to registry if it does not already exist.
    */
   def inc(name: String, count: Long = 1): this.type =
@@ -308,6 +320,8 @@ class Metrics (val registry: MetricRegistry = MetricRegistry()):
    *
    * @param count increment amount
    * @param filter name filter
+   *
+   * @return this
    */
   def inc(count: Long)(filter: String => Boolean): this.type =
     registry.getCounters(toMetricFilter(filter))
@@ -320,6 +334,8 @@ class Metrics (val registry: MetricRegistry = MetricRegistry()):
    * @param name metric name
    * @param count decrement amount
    *
+   * @return this
+   *
    * @note A counter is added to registry if it does not already exist.
    */
   def dec(name: String, count: Long = 1): this.type =
@@ -331,6 +347,8 @@ class Metrics (val registry: MetricRegistry = MetricRegistry()):
    *
    * @param count decrement amount
    * @param filter name filter
+   *
+   * @return this
    */
   def dec(count: Long)(filter: String => Boolean): this.type =
     registry.getCounters(toMetricFilter(filter))
@@ -343,6 +361,8 @@ class Metrics (val registry: MetricRegistry = MetricRegistry()):
    * @param name metric name
    * @param count event count
    *
+   * @return this
+   *
    * @note A meter is added to registry if it does not already exist.
    */
   def mark(name: String, count: Long = 1): this.type =
@@ -354,6 +374,8 @@ class Metrics (val registry: MetricRegistry = MetricRegistry()):
    *
    * @param count event count
    * @param filter name filter
+   *
+   * @return this
    */
   def mark(count: Long)(filter: String => Boolean): this.type =
     registry.getMeters(toMetricFilter(filter))
@@ -367,6 +389,8 @@ class Metrics (val registry: MetricRegistry = MetricRegistry()):
    * @param value recorded value
    *
    * @note A histogram is added to registry if it does not already exist.
+   *
+   * @return this
    */
   def update(name: String, value: Long = 1): this.type =
     registry.histogram(name).update(value)
@@ -377,6 +401,8 @@ class Metrics (val registry: MetricRegistry = MetricRegistry()):
    *
    * @param value recorded value
    * @param filter name filter
+   *
+   * @return this
    */
   def update(value: Long)(filter: String => Boolean): this.type =
     registry.getHistograms(toMetricFilter(filter))
@@ -389,6 +415,8 @@ class Metrics (val registry: MetricRegistry = MetricRegistry()):
    * @param name metric name
    * @param event timed event
    *
+   * @return event
+   *
    * @note A timer is added to registry if it does not already exist.
    */
   def time[T](name: String)(event: => T): T =
@@ -396,9 +424,45 @@ class Metrics (val registry: MetricRegistry = MetricRegistry()):
     try event finally timer.stop()
 
   /**
+   * Gets filtered metrics.
+   *
+   * @param filter name filter
+   *
+   * @return filtered metrics
+   */
+  def filter(filter: String => Boolean): Metrics =
+    val newRegistry = MetricRegistry()
+
+    registry.getMetrics().forEach { (name, metric) =>
+      if filter(name) then
+        newRegistry.register(name, metric)
+    }
+
+    Metrics(newRegistry)
+
+  /**
+   * Copies metrics.
+   *
+   * @param metrics source metrics
+   * @param prefix name prefix
+   *
+   * @return this
+   *
+   * @throws IllegalArgumentException &nbsp; if copied name already exists
+   *
+   * @note If `prefix` supplied, `"."` is added as separator, so copied name is
+   * `prefix.name`.
+   */
+  def copy(metrics: Metrics, prefix: Option[String] = None): this.type =
+    registry.registerAll(prefix.getOrElse(null), metrics.registry)
+    this
+
+  /**
    * Removes metric from registry.
    *
    * @param name metric name
+   *
+   * @return this
    */
   def remove(name: String): this.type =
     registry.remove(name)
@@ -408,12 +472,18 @@ class Metrics (val registry: MetricRegistry = MetricRegistry()):
    * Removes metrics from registry matching supplied filter.
    *
    * @param filter name filter
+   *
+   * @return this
    */
   def remove(filter: String => Boolean): this.type =
     registry.removeMatching(toMetricFilter(filter))
     this
 
-  /** Removes all metrics from registry. */
+  /**
+   * Removes all metrics from registry.
+   *
+   * @return this
+   */
   def clear(): this.type =
     registry.removeMatching(MetricFilter.ALL)
     this

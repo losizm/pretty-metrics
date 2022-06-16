@@ -239,3 +239,11 @@ class MetricsFilterSpec extends org.scalatest.flatspec.AnyFlatSpec:
     assert(metrics.timers.map(_.name)     == Seq("2.timer.1",     "2.timer.3",     "3.timer.1",     "3.timer.3"))
     assert(metrics.gauges.map(_.name)     == Seq("2.gauge.1",     "2.gauge.3",     "3.gauge.1",     "3.gauge.3"))
   }
+
+  it should "filter metrics" in {
+    val newMetrics = metrics.filter(suffix(3))
+    assert(metrics.metrics.size == 20)
+    assert(newMetrics.metrics.size == 10)
+    assert(newMetrics.names == Set("2.counter.3", "2.meter.3", "2.histogram.3", "2.timer.3", "2.gauge.3",
+                                   "3.counter.3", "3.meter.3", "3.histogram.3", "3.timer.3", "3.gauge.3"))
+  }

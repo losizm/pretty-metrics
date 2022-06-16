@@ -270,3 +270,55 @@ class MetricsSpec extends org.scalatest.flatspec.AnyFlatSpec:
 
     assert(metrics.toString == "Metrics(counters=1,meters=1,histograms=1,timers=1,gauges=1)")
   }
+
+  it should "copy metrics with prefix" in {
+    val newMetrics = Metrics()
+    newMetrics.addCounter("counter")
+    newMetrics.addMeter("meter")
+    newMetrics.addHistogram("histogram")
+    newMetrics.addTimer("timer")
+    newMetrics.addGauge("gauge") { () => 0 }
+
+    assert(newMetrics.metrics.size == 5)
+    assert(newMetrics.counters.size == 1)
+    assert(newMetrics.meters.size == 1)
+    assert(newMetrics.histograms.size == 1)
+    assert(newMetrics.timers.size == 1)
+    assert(newMetrics.gauges.size == 1)
+    assert(newMetrics.names == Set("counter", "meter", "histogram", "timer", "gauge"))
+
+    newMetrics.copy(metrics, Some("new"))
+    assert(newMetrics.metrics.size == 10)
+    assert(newMetrics.counters.size == 2)
+    assert(newMetrics.meters.size == 2)
+    assert(newMetrics.histograms.size == 2)
+    assert(newMetrics.timers.size == 2)
+    assert(newMetrics.gauges.size == 2)
+    assert(newMetrics.names == Set("counter", "meter", "histogram", "timer", "gauge", "new.counter1", "new.meter1", "new.histogram1", "new.timer1", "new.gauge1"))
+  }
+
+  it should "copy metrics without prefix" in {
+    val newMetrics = Metrics()
+    newMetrics.addCounter("counter")
+    newMetrics.addMeter("meter")
+    newMetrics.addHistogram("histogram")
+    newMetrics.addTimer("timer")
+    newMetrics.addGauge("gauge") { () => 0 }
+
+    assert(newMetrics.metrics.size == 5)
+    assert(newMetrics.counters.size == 1)
+    assert(newMetrics.meters.size == 1)
+    assert(newMetrics.histograms.size == 1)
+    assert(newMetrics.timers.size == 1)
+    assert(newMetrics.gauges.size == 1)
+    assert(newMetrics.names == Set("counter", "meter", "histogram", "timer", "gauge"))
+
+    newMetrics.copy(metrics, None)
+    assert(newMetrics.metrics.size == 10)
+    assert(newMetrics.counters.size == 2)
+    assert(newMetrics.meters.size == 2)
+    assert(newMetrics.histograms.size == 2)
+    assert(newMetrics.timers.size == 2)
+    assert(newMetrics.gauges.size == 2)
+    assert(newMetrics.names == Set("counter", "meter", "histogram", "timer", "gauge", "counter1", "meter1", "histogram1", "timer1", "gauge1"))
+  }
