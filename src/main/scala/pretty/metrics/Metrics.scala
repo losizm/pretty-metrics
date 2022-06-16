@@ -414,7 +414,7 @@ class Metrics (val registry: MetricRegistry = MetricRegistry()):
     this
 
   /** Removes all metrics from registry. */
-  def reset(): this.type =
+  def clear(): this.type =
     registry.removeMatching(MetricFilter.ALL)
     this
 

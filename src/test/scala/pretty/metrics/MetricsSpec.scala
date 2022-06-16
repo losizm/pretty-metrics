@@ -232,8 +232,8 @@ class MetricsSpec extends org.scalatest.flatspec.AnyFlatSpec:
     assert(metrics.toString == "Metrics(counters=1,meters=1,histograms=1,timers=1,gauges=1)")
   }
 
-  it should "reset metrics" in {
-    assert(metrics.reset().metrics.isEmpty)
+  it should "clear metrics" in {
+    assert(metrics.clear().metrics.isEmpty)
     assert(metrics.toString == "Metrics(counters=0,meters=0,histograms=0,timers=0,gauges=0)")
   }
 
