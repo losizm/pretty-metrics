@@ -67,6 +67,16 @@ class Metrics (val registry: MetricRegistry = MetricRegistry()):
       case _: NoSuchElementException   => None
 
   /**
+   * Gets counters matching supplied filter.
+   *
+   * @param filter name filter
+   */
+  def getCounters(filter: String => Boolean): Seq[Counter] =
+    asScala(registry.getCounters(toMetricFilter(filter)))
+      .map { (name, metric) => convert(name, metric) }
+      .toSeq
+
+  /**
    * Gets counter.
    *
    * @param name metric name
@@ -105,6 +115,16 @@ class Metrics (val registry: MetricRegistry = MetricRegistry()):
     catch
       case _: IllegalArgumentException => None
       case _: NoSuchElementException   => None
+
+  /**
+   * Gets meters matching supplied filter.
+   *
+   * @param filter name filter
+   */
+  def getMeters(filter: String => Boolean): Seq[Meter] =
+    asScala(registry.getMeters(toMetricFilter(filter)))
+      .map { (name, metric) => convert(name, metric) }
+      .toSeq
 
   /**
    * Gets meter.
@@ -147,6 +167,16 @@ class Metrics (val registry: MetricRegistry = MetricRegistry()):
       case _: NoSuchElementException   => None
 
   /**
+   * Gets histograms matching supplied filter.
+   *
+   * @param filter name filter
+   */
+  def getHistograms(filter: String => Boolean): Seq[Histogram] =
+    asScala(registry.getHistograms(toMetricFilter(filter)))
+      .map { (name, metric) => convert(name, metric) }
+      .toSeq
+
+  /**
    * Gets histogram.
    *
    * @param name metric name
@@ -185,6 +215,16 @@ class Metrics (val registry: MetricRegistry = MetricRegistry()):
     catch
       case _: IllegalArgumentException => None
       case _: NoSuchElementException   => None
+
+  /**
+   * Gets timers matching supplied filter.
+   *
+   * @param filter name filter
+   */
+  def getTimers(filter: String => Boolean): Seq[Timer] =
+    asScala(registry.getTimers(toMetricFilter(filter)))
+      .map { (name, metric) => convert(name, metric) }
+      .toSeq
 
   /**
    * Gets timer.
@@ -226,6 +266,16 @@ class Metrics (val registry: MetricRegistry = MetricRegistry()):
       case _: NoSuchElementException   => None
 
   /**
+   * Gets gauges matching supplied filter.
+   *
+   * @param filter name filter
+   */
+  def getGauges(filter: String => Boolean): Seq[Gauge[?]] =
+    asScala(registry.getGauges(toMetricFilter(filter)))
+      .map { (name, metric) => convert(name, metric) }
+      .toSeq
+
+  /**
    * Gets gauge.
    *
    * @param name metric name
@@ -254,6 +304,17 @@ class Metrics (val registry: MetricRegistry = MetricRegistry()):
     this
 
   /**
+   * Increments counters matching supplied filter.
+   *
+   * @param count increment amount
+   * @param filter name filter
+   */
+  def inc(count: Long)(filter: String => Boolean): this.type =
+    registry.getCounters(toMetricFilter(filter))
+      .forEach { (_, counter) => counter.inc(count) }
+    this
+
+  /**
    * Decrements counter.
    *
    * @param name metric name
@@ -263,6 +324,17 @@ class Metrics (val registry: MetricRegistry = MetricRegistry()):
    */
   def dec(name: String, count: Long = 1): this.type =
     registry.counter(name).dec(count)
+    this
+
+  /**
+   * Decrements counters matching supplied filter.
+   *
+   * @param count decrement amount
+   * @param filter name filter
+   */
+  def dec(count: Long)(filter: String => Boolean): this.type =
+    registry.getCounters(toMetricFilter(filter))
+      .forEach { (_, counter) => counter.dec(count) }
     this
 
   /**
@@ -278,6 +350,17 @@ class Metrics (val registry: MetricRegistry = MetricRegistry()):
     this
 
   /**
+   * Marks occurences in meters matching supplied filter.
+   *
+   * @param count event count
+   * @param filter name filter
+   */
+  def mark(count: Long)(filter: String => Boolean): this.type =
+    registry.getMeters(toMetricFilter(filter))
+      .forEach { (_, meter) => meter.mark(count) }
+    this
+
+  /**
    * Adds value to histogram.
    *
    * @param name metric name
@@ -287,6 +370,17 @@ class Metrics (val registry: MetricRegistry = MetricRegistry()):
    */
   def update(name: String, value: Long = 1): this.type =
     registry.histogram(name).update(value)
+    this
+
+  /**
+   * Adds value to histograms matching supplied filter.
+   *
+   * @param value recorded value
+   * @param filter name filter
+   */
+  def update(value: Long)(filter: String => Boolean): this.type =
+    registry.getHistograms(toMetricFilter(filter))
+      .forEach { (_, histogram) => histogram.update(value) }
     this
 
   /**
@@ -301,7 +395,6 @@ class Metrics (val registry: MetricRegistry = MetricRegistry()):
     val timer = registry.timer(name).time()
     try event finally timer.stop()
 
-
   /**
    * Removes metric from registry.
    *
@@ -309,6 +402,15 @@ class Metrics (val registry: MetricRegistry = MetricRegistry()):
    */
   def remove(name: String): this.type =
     registry.remove(name)
+    this
+
+  /**
+   * Removes metrics from registry matching supplied filter.
+   *
+   * @param filter name filter
+   */
+  def remove(filter: String => Boolean): this.type =
+    registry.removeMatching(toMetricFilter(filter))
     this
 
   /** Removes all metrics from registry. */
@@ -379,6 +481,9 @@ class Metrics (val registry: MetricRegistry = MetricRegistry()):
       metered.getFiveMinuteRate,
       metered.getFifteenMinuteRate
     )
+
+  private def toMetricFilter(filter: String => Boolean): MetricFilter =
+    (name, _) => filter(name)
 
   private def reject[T <: jmetrics.Metric]: MetricRegistry.MetricSupplier[T] =
     () => throw new NoSuchElementException
