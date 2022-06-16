@@ -316,6 +316,36 @@ class Metrics (val registry: MetricRegistry = MetricRegistry()):
     registry.removeMatching(MetricFilter.ALL)
     this
 
+  /** Returns string representation. */
+  override def toString(): String =
+    var counters   = 0
+    var meters     = 0
+    var histograms = 0
+    var timers     = 0
+    var gauges     = 0
+
+    registry.getMetrics().forEach {
+      case (_, _: jmetrics.Counter  ) => counters += 1
+      case (_, _: jmetrics.Meter    ) => meters += 1
+      case (_, _: jmetrics.Histogram) => histograms += 1
+      case (_, _: jmetrics.Timer    ) => timers += 1
+      case (_, _: jmetrics.Gauge[?] ) => gauges += 1
+    }
+
+    StringBuilder()
+      .append("Metrics(counters=")
+      .append(counters)
+      .append(",meters=")
+      .append(meters)
+      .append(",histograms=")
+      .append(histograms)
+      .append(",timers=")
+      .append(timers)
+      .append(",gauges=")
+      .append(gauges)
+      .append(")")
+      .toString
+
   private def convert(name: String, metric: jmetrics.Counter): Counter =
     CounterImpl(name, metric.getCount)
 

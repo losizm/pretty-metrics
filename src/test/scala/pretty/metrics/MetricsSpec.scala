@@ -36,6 +36,8 @@ class MetricsSpec extends org.scalatest.flatspec.AnyFlatSpec:
     metric = metrics.dec(name, 2).counter(name)
     assert(metric.name == name)
     assert(metric.count == 1)
+
+    assert(metrics.toString == "Metrics(counters=1,meters=0,histograms=0,timers=0,gauges=0)")
   }
 
   it should "mark occurences in meter" in {
@@ -48,6 +50,8 @@ class MetricsSpec extends org.scalatest.flatspec.AnyFlatSpec:
     metric = metrics.mark(name, 3).meter(name)
     assert(metric.name == name)
     assert(metric.count == 4)
+
+    assert(metrics.toString == "Metrics(counters=1,meters=1,histograms=0,timers=0,gauges=0)")
   }
 
   it should "add values to histogram" in {
@@ -64,6 +68,8 @@ class MetricsSpec extends org.scalatest.flatspec.AnyFlatSpec:
     assert(metric.count == 2)
     assert(metric.min == 50)
     assert(metric.max == 100)
+
+    assert(metrics.toString == "Metrics(counters=1,meters=1,histograms=1,timers=0,gauges=0)")
   }
 
   it should "add events to timer" in {
@@ -80,6 +86,8 @@ class MetricsSpec extends org.scalatest.flatspec.AnyFlatSpec:
     assert(result == "Goodbye, cruel world!")
     assert(metric.name == name)
     assert(metric.count == 2)
+
+    assert(metrics.toString == "Metrics(counters=1,meters=1,histograms=1,timers=1,gauges=0)")
   }
 
   it should "take readings from gauge" in {
@@ -104,6 +112,8 @@ class MetricsSpec extends org.scalatest.flatspec.AnyFlatSpec:
     metric = metrics.getGauge[Int](name).get
     assert(metric.name == name)
     assert(metric.value == 3000)
+
+    assert(metrics.toString == "Metrics(counters=1,meters=1,histograms=1,timers=1,gauges=1)")
   }
 
   it should "get all metric names" in {
@@ -120,30 +130,35 @@ class MetricsSpec extends org.scalatest.flatspec.AnyFlatSpec:
     assert(metrics.counters.size == 1)
     metrics.inc("counter2")
     assert(metrics.counters.size == 2)
+    assert(metrics.toString == "Metrics(counters=2,meters=1,histograms=1,timers=1,gauges=1)")
   }
 
   it should "get all meters" in {
     assert(metrics.meters.size == 1)
     metrics.mark("meter2")
     assert(metrics.meters.size == 2)
+    assert(metrics.toString == "Metrics(counters=2,meters=2,histograms=1,timers=1,gauges=1)")
   }
 
   it should "get all histograms" in {
     assert(metrics.histograms.size == 1)
     metrics.update("histogram2", 0)
     assert(metrics.histograms.size == 2)
+    assert(metrics.toString == "Metrics(counters=2,meters=2,histograms=2,timers=1,gauges=1)")
   }
 
   it should "get all timers" in {
     assert(metrics.timers.size == 1)
     metrics.time("timer2")("Hello, world!")
     assert(metrics.timers.size == 2)
+    assert(metrics.toString == "Metrics(counters=2,meters=2,histograms=2,timers=2,gauges=1)")
   }
 
   it should "get all gauges" in {
     assert(metrics.gauges.size == 1)
     metrics.addGauge("gauge2") { () => true }
     assert(metrics.gauges.size == 2)
+    assert(metrics.toString == "Metrics(counters=2,meters=2,histograms=2,timers=2,gauges=2)")
   }
 
   it should "get all metrics" in {
@@ -197,6 +212,8 @@ class MetricsSpec extends org.scalatest.flatspec.AnyFlatSpec:
     assertThrows[IllegalArgumentException](metrics.mark(name))
     assertThrows[IllegalArgumentException](metrics.update(name))
     assertThrows[IllegalArgumentException](metrics.time(name)(None))
+
+    assert(metrics.toString == "Metrics(counters=2,meters=2,histograms=2,timers=2,gauges=2)")
   }
 
   it should "remove metrics" in {
@@ -211,10 +228,13 @@ class MetricsSpec extends org.scalatest.flatspec.AnyFlatSpec:
     assert(metrics.histograms.size == 1)
     assert(metrics.timers.size == 1)
     assert(metrics.gauges.size == 1)
+
+    assert(metrics.toString == "Metrics(counters=1,meters=1,histograms=1,timers=1,gauges=1)")
   }
 
   it should "reset metrics" in {
     assert(metrics.reset().metrics.isEmpty)
+    assert(metrics.toString == "Metrics(counters=0,meters=0,histograms=0,timers=0,gauges=0)")
   }
 
   it should "add metrics" in {
@@ -241,4 +261,12 @@ class MetricsSpec extends org.scalatest.flatspec.AnyFlatSpec:
     assert(metrics.timers.size == 1)
     val timer = metrics.getTimer("timer1").get
     assert(timer.count == 0)
+
+    metrics.addGauge("gauge1") { () => 0 }
+    assert(metrics.metrics.size == 5)
+    assert(metrics.gauges.size == 1)
+    val gauge = metrics.getGauge[Int]("gauge1").get
+    assert(gauge.value == 0)
+
+    assert(metrics.toString == "Metrics(counters=1,meters=1,histograms=1,timers=1,gauges=1)")
   }
